@@ -46,9 +46,10 @@ const getRequest = async (bearer, proxyURL) => {
 // The below points our server to a series of "route" files.
 // These routes give our server a "map" of how to respond when users visit or request data from various URLs.
 // ================================================================================
-app.get("/:proxyURL", async (req, res) => {
-    const proxyURL = req.params.proxyURL
-    if(proxyURL==='favicon.ico'){
+app.get("*", async (req, res) => {
+    const proxyURL = req.originalUrl
+    console.log(proxyURL)
+    if(proxyURL.includes('favicon.ico')){
         res.status(200).end()
         return
     }
