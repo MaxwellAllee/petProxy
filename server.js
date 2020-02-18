@@ -48,8 +48,8 @@ const getRequest = async (bearer, proxyURL) => {
 // ================================================================================
 app.get("*", async (req, res) => {
     const proxyURL = req.originalUrl
-    console.log(proxyURL)
-    if(proxyURL.includes('favicon.ico')){
+    console.log(proxyURL, "<=========")
+    if(proxyURL.includes('favicon.ico')||proxyURL === "/"){
         res.status(200).end()
         return
     }
