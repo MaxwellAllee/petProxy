@@ -30,16 +30,20 @@ let tokenExpire = 0
 const token = async () => {
     return axios.post("https://api.petfinder.com/v2/oauth2/token", requestObj).then((results) => {
         console.log("New Token!!")
-        tokenExpire = new Date().getTime() + (results.expires_in*1000)
-     return actualToken = results.data.access_token
+        tokenExpire = new Date().getTime() + (results.data.expires_in * 1000)
+        return actualToken = results.data.access_token
     })
 }
 const getRequest = async (bearer, proxyURL) => {
-    
     const config = {
         headers: { Authorization: `Bearer ${bearer}` }
     };
-    return axios.get(`https://api.petfinder.com/v2/${proxyURL}`, config).then((results) => results)
+    try{
+    return axios.get(`https://api.petfinder.com/v2${proxyURL}`, config).then((results) => results).catch(err=>err)
+    }
+    catch(err){
+        console.log(">>>>",err,"<<<<")
+    }
 }
 // ================================================================================
 // ROUTER
@@ -49,18 +53,40 @@ const getRequest = async (bearer, proxyURL) => {
 app.get("*", async (req, res) => {
     const proxyURL = req.originalUrl
     console.log(proxyURL, "<=========")
-    if(proxyURL.includes('favicon.ico')||proxyURL === "/"){
+    if (proxyURL.includes('favicon.ico') || proxyURL === "/") {
         res.status(200).end()
         return
     }
-    if (tokenExpire < new Date().getTime()){
-        
-        const response = await getRequest(await token() , proxyURL).catch(err=>console.log(err))
-        res.json(response.data)}
+    if (tokenExpire < new Date().getTime()) {
+        try {
+            const response = await getRequest(await token(), proxyURL).catch(err => console.log(err))
+            // console.log(response, "<====")
+            if(response.status !== 404 && response.name !== "Error"){
+               
+                res.json(response.data)
+
+            }else{
+                console.log(">>>>error<<<")
+                res.json({error:"url error"})
+            }
+        } catch (err) {
+           console.log(err,"........")
+        }
+    }
 
     else {
-        const response = await getRequest(actualToken , proxyURL).catch(err=>console.log(err))
-        res.json(response.data)
+        try {
+            const response = await getRequest(actualToken, proxyURL).catch(err => console.log(err))
+            if(response.status !== 404 && response.name !== "Error"){
+                res.json(response.data)
+
+            }else{
+                console.log(">>>>error<<<")
+                res.json({error:"url error"})
+            }
+        } catch (err) {
+            //console.log(err,"........")
+        }
     }
 })
 
